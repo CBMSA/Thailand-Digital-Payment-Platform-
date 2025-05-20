@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thailand Government Token Wallet</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+    h2, h4 {
+      color: #005b96;
+    }
+    input, select, button {
+      margin: 8px 0;
+      padding: 8px;
+      width: 300px;
+      max-width: 100%;
+    }
+    button {
+      background: #0077cc;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #005fa3;
+    }
+    #transactions {
+      margin-top: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    #filters {
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+  <h2>CBDC Wallet Registration</h2>
+  <h4>Verify Account</h4>
+  <p>Enter Verification Code (123456)</p>
+  <button onclick="completeLogin()">Complete Login</button>
+  <h3>Welcome,</h3>
+  <p>Company Budget Balance: THB</p>
+
+  <h4>Make a Transfer</h4>
+  <input type="text" id="receiverName" placeholder="Receiver Account Name"><br>
+  <input type="text" id="receiverNumber" placeholder="Receiver Account Number"><br>
+  <input type="text" id="receiverBank" placeholder="Receiver Bank Name"><br>
+  <input type="number" id="amount" placeholder="Amount to send"><br>
+  <select id="type">
+    <option value="Salary">Salary</option>
+    <option value="Business">Business</option>
+    <option value="Pension">Pension</option>
+  </select><br>
+  <button onclick="transfer()">Transfer</button>
+
+  <div id="filters">
+    <h4>Filter Transactions</h4>
+    <label>Date Range:</label><br>
+    <input type="date" id="startDate"> to <input type="date" id="endDate"><br>
+    <label>Type:</label>
+    <select id="filterType">
+      <option value="">All</option>
+      <option value="Salary">Salary</option>
+      <option value="Business">Business</option>
+      <option value="Pension">Pension</option>
+    </select><br>
+    <button onclick="renderTransactions()">Apply Filters</button>
+  </div>
+
+  <h4>Transaction History</h4>
+  <div id="transactions"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
