@@ -1,16 +1,21 @@
+
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract TokenizedBond is ERC20, Ownable {
+contract ThaiTokenizedBond is ERC20, Ownable {
     address public issuer;
     uint256 public maturityDate;
-    uint256 public interestRate; // e.g., 5 means 5%
+    uint256 public interestRate; // e.g., 5 represents 5%
     mapping(address => uint256) public lastClaim;
 
-    constructor(address _issuer, uint256 _maturityDate, uint256 _interestRate) ERC20("SADC Tokenized Bond", "SADCBOND") {
+    constructor(
+        address _issuer,
+        uint256 _maturityDate,
+        uint256 _interestRate
+    ) ERC20("Thailand Digital Bond", "THBOND") {
         issuer = _issuer;
         maturityDate = _maturityDate;
         interestRate = _interestRate;
