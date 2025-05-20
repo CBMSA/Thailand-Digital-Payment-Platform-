@@ -1,8 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Thailand Government Token Wallet</title>
   <style>
     body {
@@ -42,9 +43,11 @@
 </head>
 <body>
   <h2>CBDC Wallet Registration</h2>
+
   <h4>Verify Account</h4>
-  <p>Enter Verification Code (123456)</p>
-  <button onclick="completeLogin()">Complete Login</button>
+  <p>Click the button to receive your verification code via SMS (Code: 123456)</p>
+  <button onclick="sendVerification()">Complete Login</button>
+
   <h3>Welcome,</h3>
   <p>Company Budget Balance: THB</p>
 
@@ -58,7 +61,7 @@
     <option value="Business">Business</option>
     <option value="Pension">Pension</option>
   </select><br>
-  <button onclick="transfer()">Transfer</button>
+  <button onclick="sendTransfer()">Transfer</button>
 
   <div id="filters">
     <h4>Filter Transactions</h4>
@@ -77,6 +80,39 @@
   <h4>Transaction History</h4>
   <div id="transactions"></div>
 
-  <script src="app.js"></script>
+  <script>
+    function sendVerification() {
+      fetch('/send-verification', {
+        method: 'POST'
+      })
+      .then(res => res.json())
+      .then(data => alert(data.message))
+      .catch(err => alert("Verification failed."));
+    }
+
+    function sendTransfer() {
+      const payload = {
+        receiverName: document.getElementById("receiverName").value,
+        receiverNumber: document.getElementById("receiverNumber").value,
+        receiverBank: document.getElementById("receiverBank").value,
+        amount: document.getElementById("amount").value,
+        type: document.getElementById("type").value
+      };
+
+      fetch('/send-transaction', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => alert(data.message))
+      .catch(err => alert("Transaction failed."));
+    }
+
+    function renderTransactions() {
+      const transactionsDiv = document.getElementById("transactions");
+      transactionsDiv.innerHTML = "<p>No transaction history available yet.</p>";
+    }
+  </script>
 </body>
 </html>
