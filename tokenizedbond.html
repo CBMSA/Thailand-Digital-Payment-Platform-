@@ -1,152 +1,192 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Tokenized Bond Issuance | Bank of Thailand CBDC</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Thailand Tokenized Bond Issuance</title>
   <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf"></script> <!-- For PDF generation -->
-  <script src="https://cdn.jsdelivr.net/npm      font-family: 'Segoe UI', sans-serif;
-      background-color: #f2f4f7;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding-top: 60px;
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f6f9;
+      padding: 30px;
     }
     .card {
       background: white;
-      padding: 30px;
+      padding: 20px;
       border-radius: 12px;
-      box[type="number"] {
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      max-width: 600px;
+      margin: auto;
+    }
+    label, input, select {
+      display: block;
+      margin-bottom: 10px;
       width: 100%;
-      padding: 10px;
-      margin-top: 6px;
-      margin-bottom: 20px;
+    }
+    input, select {
+      padding: 8px;
       border: 1px solid #ccc;
       border-radius: 6px;
     }
     button {
-      width: 100%;
       padding: 12px;
-      background;
-      text-align: center;
-    }
-    #unauthorized {
-      color: red;
-      font-weight: bold;
-      text-align: center;
-    }
-    #digitalCertificate {
-      margin-top: 20px;
-      text-align: center;
-    }
-    #qrCode {
+      width: 100%;
+      background: #006400;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
       margin-top: 10px;
     }
-    footer {
-      margin-top:: 12px;
-      color: #888;
+    #certificateSection {
+      display: none;
+      margin-top: 30px;
+      text-align: center;
+    }
+    pre {
+      text-align: left;
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 10px;
     }
   </style>
 </head>
 <body>
-  <div class="card" id="issuerPanel" style="display:none;">
-    <h2>Tokenized Bond Issuance (THB)</h2>
-<nav>
-    <a href="index.html">CBDC Portal</a> |
-    <a href="home.html">Home</a> |
-    <a href="p2p.html">Wallet</a>
-  </nav>
+  <div class="card">
+    <h2>Issue Thailand Tokenized Bond (THB)</h2>
 
+    <button onclick="connectWallet()">Connect MetaMask Wallet</button>
+    <p id="walletAddress"></p>
 
-    <label>Investor Wallet Address</label>
-    <input0x...">
+    <label for="amount">Bond Amount (THB)</label>
+    <input type="number" id="amount" required min="1">
 
-    <label>Bond Amount (THB)</label>
-    <input type="number" id="amount" placeholder="เช่น 100000">
+    <label for="maturity">Maturity (Years)</label>
+    <input type="number" id="maturity" required min="1">
 
-    <button onclick="issueBond()">Issue Bond</button>
+    <label for="interest">Interest Rate (%)</label>
+    <input type="number" id="interest" required min="0">
+
+    <label for="rateType">Rate Type</label>
+    <select id="rateType">
+      <option>Fixed</option>
+      <option>Floating</option>
+    </select>
+
+    <label for="yield">Yield (%)</label>
+    <input type="number" id="yield" required min="0">
+
+    <label for="bid">Bid Price</label>
+    <input type="number" id="bid" required min="0">
+
+    <label for="ask">Ask Price</label>
+    <input type="number" id="ask" required min="0">
+
+    <button onclick="issueBond()">Issue Bond on Blockchain</button>
+
     <div id="status"></div>
-
-    <div id="digitalCertificate" style="display:none;">
-      <h3>Digital Bond Certificate</h3>
-      <pre id="certificate PDF Certificate</button>
-    </div>
   </div>
 
-  <div id="unauthorized" style="display:none;">
-    Access Denied: This wallet is not authorized to issue bonds.
+  <div id="certificateSection" class="card">
+    <h3>Bond Certificate</h3>
+    <pre id="certificateText"></pre>
+    <div id="qrCode"></div>
+    <button onclick="downloadPDF()">Download PDF</button>
   </div>
 
-  <footer>
-    &copy; Bank of Thailand CBDC 2025 | All Rights Reserved
-  </footer>
+  <script>
+    let web3;
+    let currentAccount;
 
- load', async () => {
-      if (typeof window.ethereum !== 'undefined') {
+    async function connectWallet() {
+      if (window.ethereum) {
         web3 = new Web3(window.ethereum);
-        await ethereum.request({ method: 'eth_requestAccounts' });
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          currentAccount = accounts[0];
+          document.getElementById("walletAddress").textContent = "Connected: " + currentAccount;
+        } catch (err) {
+          alert("Wallet connection denied.");
+        }
+      } else {
+        alert("MetaMask is required. Please install it.");
+      }
+    }
 
-        const accounts = await web3.eth.getAccounts();
-        currentAccount = accounts[0];
+    async function issueBond() {
+      if (!currentAccount) return alert("Please connect your wallet first.");
 
-        if (currentAccount.toLowerCase() !== issuerAddress.toLowerCase()) {
-          document.getElementById('unauthorized').style.display = 'Bond() {
-      const recipient = document.getElementById('recipient').value.trim();
-      const amount = parseInt(document.getElementById('amount').value.trim());
+      const amount = document.getElementById("amount").value;
+      const maturity = document.getElementById("maturity").value;
+      const interest = document.getElementById("interest").value;
+      const rateType = document.getElementById("rateType").value;
+      const yieldRate = document.getElementById("yield").value;
+      const bid = document.getElementById("bid").value;
+      const ask = document.getElementById("ask").value;
 
-      if (!web3.utils.isAddress(recipient)) {
-        document.getElementById('status').innerText = 'Invalid wallet address.';
+      if (!amount || !maturity || !interest || !yieldRate || !bid || !ask) {
+        alert("All fields are required.");
         return;
       }
 
+      const bondNumber = "TH-BOND-" + Math.floor(Math.random() * 1e6);
+      const bondData = {
+        bondNumber,
+        country: "Thailand",
+        currency: "THB",
+        recipient: currentAccount,
+        amount,
+        maturity,
+        interestRate: interest + "%",
+        rateType,
+        yield: yieldRate + "%",
+        bid,
+        ask,
+        issuedBy: "Bank of Thailand",
+        issueDate: new Date().toISOString().split("T")[0],
+      };
+
+      // Dummy Transaction - Replace with contract call below
       try {
-        await bondContract.methods.issue(recipient, amount).send({ from: currentAccount });
+        document.getElementById("status").textContent = "Simulating issuance on blockchain...";
+        await web3.eth.sendTransaction({ from: currentAccount, to: currentAccount, value: "0x0" });
 
-        // Display success message
-        document.getElementById('status').innerText = `Bond issued to ${recipient} for ${amount} THB.`;
+        // TODO: Replace with contract interaction
+        // const contract = new web3.eth.Contract(ABI, CONTRACT_ADDRESS);
+        // await contract.methods.issueBond(...params).send({ from: currentAccount });
 
-        // Generate Bond Certificate
-        Bond",
-          interestRate: "2.5% annually",
-          maturityDate: "2028-12-31",
-          issuedBy: "Bank of Thailand",
-          transactionHash: "TX_HASH_PLACEHOLDER" // Replace with actual transaction hash if needed
-        };
+        document.getElementById("status").textContent = "Bond issuance simulated successfully!";
+        document.getElementById("certificateText").textContent = JSON.stringify(bondData, null, 2);
+        document.getElementById("certificateSection").style.display = "block";
 
-        // Display Digital Certificate
-        document.getElementById('digitalCertificate').style.display = 'block';
-        document.getElementById('certificateDetails').innerText = JSON.stringify(bondDetails, null, 2);
+        const qrContainer = document.getElementById("qrCode");
+        qrContainer.innerHTML = "";
+        new QRCode(qrContainer, { text: JSON.stringify(bondData), width: 150, height: 150 });
 
-        // Generate QR Code
-        const qrContainer = document.getElementById('qrCode');
-        qrContainer.innerHTML = ''; // Clear any previous QR codes
-        QRCode.toCanvas(qrContainer, JSON.stringify(bondDetails), function (error) {
-          if (error) console.error(error);
-        });
-
-        // Save details for PDF generation
-        window.bondDetails = bondDetails;
-      } catch (error) {
-        console.error(error);
-        document.getElementById('status').innerText = `Transaction failed: ${error.message}`;
+        window.generatedBond = bondData;
+      } catch (err) {
+        document.getElementById("status").textContent = "Issuance failed: " + err.message;
       }
     }
 
     function downloadPDF() {
-      const bondDetails = window.bondDetails;
-      const pdf = new jsPDF();
-
-      pdf.text("Bond Certificate", 10, 10);
-      pdf.text(`Recipient WalletbondDetails.recipient}`, 10, 20);
-      pdf.text(`Amount (THB): ${bondDetails.amount}`, 10, 30);
-      pdf.text(`Bond Type: ${bondDetails.bondType}`, 10, 40);
-      pdf.text(`Interest Rate: ${bondDetails.interestRate}`, 10, 50);
-      pdf.text(`Maturity Date: ${bondDetails.maturityDate}`, 10, 60);
-      pdf.text(`Issued By: ${bondDetails.issuedBy}`, 10, 70);
-      pdf.text(`Transaction Hash: ${bondDetails.transactionHash}`, 10, 80);
-
-      pdf.save("Bond_Certificate.pdf");
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const bond = window.generatedBond;
+      let y = 10;
+      doc.setFontSize(14);
+      doc.text("Thailand Tokenized Bond Certificate", 10, y); y += 10;
+      Object.entries(bond).forEach(([key, value]) => {
+        doc.text(`${key}: ${value}`, 10, y); y += 10;
+      });
+      doc.save("Thailand_Bond_Certificate.pdf");
     }
   </script>
 </body>
 </html>
+
+
