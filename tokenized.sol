@@ -1,80 +1,81 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+Smart Contract (Solidity - ThailandBond.sol)
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract SADCTokenizedBond is ERC20, Ownable {
+contract ThailandBond is ERC721URIStorage, Ownable {
+    uint256 public nextBondId;
+
     struct BondDetails {
-        uint256 maturityDate;
-        uint256 interestRate; // e.g., 5 represents 5%
-        uint256 bidValue;
-        uint256 askValue;
+        string bondNumber;
+        string country;
+        string currency;
+        uint256 amount;
+        uint256 maturity;
+        uint256 interestRate; // multiplied by 100 (e.g. 350 = 3.5%)
+        string rateType;
+        uint256 yieldRate;
+        uint256 bid;
+        uint256 ask;
+        address issuedTo;
+        string issueDate;
     }
 
-    mapping(address => BondDetails) public issuers; // Issuer address mapped to bond details
-    mapping(address => mapping(address => uint256)) public lastClaim; // Last claim timestamp per Bond", "SADCBOND") {}
+    mapping(uint256 => BondDetails) public bonds;
 
-    modifier onlyIssuer(address issuer) {
-        require(issuers[issuer].maturityDate != 0, "Not a valid issuer");
-        require(msg.sender == issuer, "Only issuer can perform this action");
-        _;
-    }
+    constructor() ERC721("ThailandTokenizedBond", "THBOND") {}
 
-    function addIssuer(
-        address issuer,
-        uint256 _maturityDate,
-        uint256 _interestRate,
-        uint256 _bidValue,
-        uintissuer] = BondDetails({
-            maturityDate: _maturityDate,
-            interestRate: _interestRate,
-            bidValue: _bidValue,
-            askValue: _askValue
+    function issueBond(
+        string memory bondNumber,
+        uint256 amount,
+        uint256 maturity,
+        uint256 interestRate,
+        string memory rateType,
+        uint256 yieldRate,
+        uint256 bid,
+        uint256 ask,
+        string memory issueDate
+    ) public {
+        uint256 tokenId = nextBondId++;
+        _mint(msg.sender, tokenId);
+
+        bonds[tokenId] = BondDetails({
+            bondNumber: bondNumber,
+            country: "Thailand",
+            currency: "THB",
+            amount: amount,
+            maturity: maturity,
+            interestRate: interestRate,
+            rateType: rateType,
+            yieldRate: yieldRate,
+            bid: bid,
+            ask: ask,
+            issuedTo: msg.sender,
+            issueDate: issueDate
         });
     }
 
-    function updateIssuer(
-        address issuer,
-        uint256 _maturityDate,
-        uint256 _interestRate,
-        uint256 _bidValue,
-        uint256 _askValue
-    ) external onlyOwner {
-        require(issuers[issuer].maturityDate != 0, "Issuer: _interestRate,
-            bidValue: _bidValue,
-            askValue: _askValue
-        });
+    function getBond(uint256 tokenId) public view returns (BondDetails memory) {
+        require(_exists(tokenId), "Bond does not exist");
+        return bonds[tokenId];
     }
-
-    function issue(address to, uint256 amount) external onlyIssuer(msg.sender) {
-        _mint(to, amount * 10 ** decimals());
-        lastClaim[msg.sender][to] = block.timestamp;
-    }
-
-    function burn(address from, uint256 amount) external onlyIssuer(msg.sender) {
-        _burn(from, amount * 10 ** decimals());
-    }
-
-    function claimInterest(address issuer) external {
-        BondDetails memory bond = issuers[issuer];
-        require(block.timestamp < bond.maturityDate, "Bond has matured");
-        uint256 balance = balanceOf(msg.sender);
-        require(balance > 0, "No bonds held");
-
-        uint256 last = lastClaim[issuer][msg.sender];
-        require(last < block.timestamp, "Already claimed");
-
-        uint256 duration =        payable(msg.sender).transfer }
-
-    function redeem(address issuer) external {
-        BondDetails memory bond = issuers[issuer];
-        require(block.timestamp >= bond.maturityDate, "Bond not yet matured");
-        uint256 balance = balanceOf(msg.sender);
-        require(balance > 0, "No bonds to redeem");
-        _burn(msg.sender, balance);
-        payable(msg.sender).transfer(balance);
-    }
-
-    receive() external payable {}
 }
+
+
+---
+
+Deployment & Integration
+
+Deploy the Solidity contract on Ethereum testnet (e.g., Goerli or Sepolia).
+
+Use Web3.js to connect the HTML to the deployed contract (issueBond()).
+
+Replace dummy transaction with contract.methods.issueBond(...).send({ from: currentAccount }).
+
+
+
+
