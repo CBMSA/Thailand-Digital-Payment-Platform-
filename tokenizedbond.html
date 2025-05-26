@@ -101,20 +101,27 @@
   <script>
     let web3;
     let currentAccount;
+    let contract;
+
+    const ALCHEMY_API_KEY = "nEWMM8r_LC0XoflEmMBJX";
+    const ALCHEMY_RPC_URL = `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
 
     const CONTRACT_ADDRESS = "YOUR_CONTRACT_ADDRESS"; // Replace with your deployed contract address
     const CONTRACT_ABI = [ /* Replace with your actual ABI */ ];
 
-    let contract;
-
     async function connectWallet() {
       if (window.ethereum) {
-        web3 = new Web3(window.ethereum);
         try {
+          // Request access to MetaMask accounts
           const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
           currentAccount = accounts[0];
           document.getElementById("walletAddress").textContent = "Connected: " + currentAccount;
+
+          // Initialize Web3 with Alchemy as provider, MetaMask as signer
+          const alchemyProvider = new Web3.providers.HttpProvider(ALCHEMY_RPC_URL);
+          web3 = new Web3(window.ethereum); // MetaMask as provider for transactions
           contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+
         } catch (err) {
           alert("Wallet connection denied.");
         }
@@ -159,12 +166,12 @@
       try {
         document.getElementById("status").textContent = "Issuing bond on blockchain...";
 
-        // Replace this with your actual contract method and parameters
+        // Call smart contract function
         await contract.methods.issueBond(
           bondNumber,
           web3.utils.toWei(amount, "ether"),
           parseInt(maturity),
-          parseInt(interest * 100), // Optional: convert to integer
+          parseInt(interest * 100),
           rateType,
           parseInt(yieldRate * 100),
           parseInt(bid),
