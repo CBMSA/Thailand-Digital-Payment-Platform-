@@ -66,15 +66,6 @@ contract ThailandBond is ERC721URIStorage, Ownable {
 }
 
 
----
-
-Deployment & Integration
-
-Deploy the Solidity contract on Ethereum testnet (e.g., Goerli or Sepolia).
-
-Use Web3.js to connect the HTML to the deployed contract (issueBond()).
-
-Replace dummy transaction with contract.methods.issueBond(...).send({ from: currentAccount }).
 
 
 
