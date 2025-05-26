@@ -102,6 +102,11 @@
     let web3;
     let currentAccount;
 
+    const CONTRACT_ADDRESS = "YOUR_CONTRACT_ADDRESS"; // Replace with your deployed contract address
+    const CONTRACT_ABI = [ /* Replace with your actual ABI */ ];
+
+    let contract;
+
     async function connectWallet() {
       if (window.ethereum) {
         web3 = new Web3(window.ethereum);
@@ -109,6 +114,7 @@
           const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
           currentAccount = accounts[0];
           document.getElementById("walletAddress").textContent = "Connected: " + currentAccount;
+          contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
         } catch (err) {
           alert("Wallet connection denied.");
         }
@@ -150,16 +156,22 @@
         issueDate: new Date().toISOString().split("T")[0],
       };
 
-      // Dummy Transaction - Replace with contract call below
       try {
-        document.getElementById("status").textContent = "Simulating issuance on blockchain...";
-        await web3.eth.sendTransaction({ from: currentAccount, to: currentAccount, value: "0x0" });
+        document.getElementById("status").textContent = "Issuing bond on blockchain...";
 
-        // TODO: Replace with contract interaction
-        // const contract = new web3.eth.Contract(ABI, CONTRACT_ADDRESS);
-        // await contract.methods.issueBond(...params).send({ from: currentAccount });
+        // Replace this with your actual contract method and parameters
+        await contract.methods.issueBond(
+          bondNumber,
+          web3.utils.toWei(amount, "ether"),
+          parseInt(maturity),
+          parseInt(interest * 100), // Optional: convert to integer
+          rateType,
+          parseInt(yieldRate * 100),
+          parseInt(bid),
+          parseInt(ask)
+        ).send({ from: currentAccount });
 
-        document.getElementById("status").textContent = "Bond issuance simulated successfully!";
+        document.getElementById("status").textContent = "Bond successfully issued!";
         document.getElementById("certificateText").textContent = JSON.stringify(bondData, null, 2);
         document.getElementById("certificateSection").style.display = "block";
 
