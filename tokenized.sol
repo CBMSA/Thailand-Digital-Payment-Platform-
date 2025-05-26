@@ -1,6 +1,4 @@
 
-Smart Contract (Solidity - ThailandBond.sol)
-
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
@@ -14,18 +12,32 @@ contract ThailandBond is ERC721URIStorage, Ownable {
         string bondNumber;
         string country;
         string currency;
-        uint256 amount;
-        uint256 maturity;
-        uint256 interestRate; // multiplied by 100 (e.g. 350 = 3.5%)
-        string rateType;
-        uint256 yieldRate;
-        uint256 bid;
-        uint256 ask;
+        uint256 amount; // in THB
+        uint256 maturity; // in years
+        uint256 interestRate; // basis points (e.g., 350 = 3.5%)
+        string rateType; // Fixed or Floating
+        uint256 yieldRate; // basis points
+        uint256 bid; // price
+        uint256 ask; // price
         address issuedTo;
         string issueDate;
     }
 
     mapping(uint256 => BondDetails) public bonds;
+
+    event BondIssued(
+        uint256 indexed tokenId,
+        address indexed issuedTo,
+        string bondNumber,
+        uint256 amount,
+        uint256 maturity,
+        uint256 interestRate,
+        string rateType,
+        uint256 yieldRate,
+        uint256 bid,
+        uint256 ask,
+        string issueDate
+    );
 
     constructor() ERC721("ThailandTokenizedBond", "THBOND") {}
 
@@ -33,15 +45,20 @@ contract ThailandBond is ERC721URIStorage, Ownable {
         string memory bondNumber,
         uint256 amount,
         uint256 maturity,
-        uint256 interestRate,
+        uint256 interestRate, // in basis points
         string memory rateType,
-        uint256 yieldRate,
+        uint256 yieldRate, // in basis points
         uint256 bid,
         uint256 ask,
-        string memory issueDate
+        string memory issueDate,
+        string memory tokenURI // optional metadata link
     ) public {
+        require(amount > 0, "Amount must be > 0");
+        require(maturity > 0, "Maturity must be > 0");
+
         uint256 tokenId = nextBondId++;
         _mint(msg.sender, tokenId);
+        _setTokenURI(tokenId, tokenURI);
 
         bonds[tokenId] = BondDetails({
             bondNumber: bondNumber,
@@ -57,6 +74,20 @@ contract ThailandBond is ERC721URIStorage, Ownable {
             issuedTo: msg.sender,
             issueDate: issueDate
         });
+
+        emit BondIssued(
+            tokenId,
+            msg.sender,
+            bondNumber,
+            amount,
+            maturity,
+            interestRate,
+            rateType,
+            yieldRate,
+            bid,
+            ask,
+            issueDate
+        );
     }
 
     function getBond(uint256 tokenId) public view returns (BondDetails memory) {
@@ -64,9 +95,6 @@ contract ThailandBond is ERC721URIStorage, Ownable {
         return bonds[tokenId];
     }
 }
-
-
-
 
 
 
